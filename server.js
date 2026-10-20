@@ -375,9 +375,9 @@ async function startServer() {
         app.listen(PORT, "0.0.0.0", () => {
             console.log("Server dang chay tai http://localhost:" + PORT);
         });
-    } catch (error) {
-        console.error("Khong khoi dong duoc server:", error.message);
+        } catch (error) {
+        console.error("Khong khoi dong duoc server:", error);
+        process.exit(1);
     }
 }
-
 startServer();
