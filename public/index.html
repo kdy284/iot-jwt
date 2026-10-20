@@ -1,0 +1,902 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart IoT | Control Center</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+:root{--bg:#0b1120;--panel:#121c30;--panel2:#18253c;--text:#edf3ff;--muted:#91a2bf;--blue:#638cff;--green:#43d9a3;--yellow:#ffd36b;--red:#ff8585;--border:rgba(148,170,210,.15)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 80% 0%,#172b4c 0%,transparent 40%),var(--bg);color:var(--text);font-family:'Be Vietnam Pro',Arial,sans-serif}
+button,input{font:inherit}button{cursor:pointer}
+.layout{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr)}
+.sidebar{padding:23px 16px;border-right:1px solid var(--border);background:#0a111fc9;display:flex;flex-direction:column}
+.logo{display:flex;align-items:center;gap:11px;font-size:17px;font-weight:800;letter-spacing:1px;margin:5px 8px 35px}
+.logo-icon{width:41px;height:41px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#648cff,#8667ec);font-size:23px}
+.section-label{color:#657795;font-size:10px;font-weight:800;letter-spacing:1.5px;margin:20px 12px 10px}
+.nav{display:flex;align-items:center;gap:12px;padding:12px;margin:4px 0;color:var(--muted);border:1px solid transparent;border-radius:11px;font-size:12px;background:transparent;text-align:left;width:100%}
+.nav:hover,.nav.active{color:white;background:#203253}
+.nav.active{box-shadow:inset 3px 0 #7ea2ff}
+.nav-icon{width:22px;text-align:center;font-size:17px}
+.sidebar-bottom{margin-top:auto;padding:15px;border:1px solid var(--border);border-radius:14px;background:var(--panel)}
+.mini-status{font-size:11px;margin-top:10px;color:var(--green)}
+.logout-btn{width:100%;margin-top:12px;padding:11px;border:1px solid #563545;border-radius:10px;background:#321f31;color:#ffb2b2;font-weight:700;font-size:12px}
+main{min-width:0;padding:30px 4%}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:25px}
+.eyebrow{color:#8ea9ff;font-size:10px;font-weight:700;letter-spacing:1.6px}
+h1{font-size:clamp(22px,3vw,30px);margin:8px 0}
+.subtitle,.card-description{color:var(--muted);font-size:12px;line-height:1.7}
+.online{padding:10px 13px;border:1px solid #43d9a329;border-radius:30px;background:#43d9a30d;color:var(--green);font-size:10px;white-space:nowrap}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:5px}
+.welcome{padding:22px 25px;margin-bottom:20px;border:1px solid var(--border);border-radius:17px;background:linear-gradient(105deg,#172747,#152035);display:flex;justify-content:space-between;align-items:center;gap:15px}
+.welcome h2{font-size:18px;margin:0 0 8px}.welcome p{color:var(--muted);font-size:12px;line-height:1.8;margin:0}.welcome-icon{font-size:42px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:20px}
+.stat,.card{background:#121c30ed;border:1px solid var(--border);border-radius:16px;min-width:0}
+.stat{padding:17px}.stat-label{color:var(--muted);font-size:10px}.stat-value{font-size:16px;font-weight:700;margin-top:14px;overflow-wrap:anywhere}.stat-hint{color:var(--muted);font-size:10px;margin-top:6px}
+.content-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(250px,.9fr);gap:17px}
+.card{padding:22px;margin-bottom:17px}.card h3{font-size:14px;margin:0}.card-heading{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.pill{font-size:10px;padding:6px 9px;border-radius:20px;background:#202e46;color:#b9caff;white-space:nowrap}
+.light-stage{display:flex;flex-direction:column;align-items:center;padding:22px 10px}
+.bulb-wrap{width:125px;height:125px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#293751,#19263c 65%,transparent 70%);transition:.3s}
+.bulb{font-size:68px;filter:grayscale(1);opacity:.6;transition:.3s}
+body.light-on .bulb-wrap{background:radial-gradient(circle,#66562d,#34354a 46%,transparent 72%);box-shadow:0 0 38px #ffd36b18}
+body.light-on .bulb{filter:none;opacity:1;transform:scale(1.06);text-shadow:0 0 30px #ffd36b66}
+.light-name{font-weight:700;font-size:13px;margin-top:8px}.light-status{font-size:11px;color:var(--muted);margin-top:7px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#172239}
+.toggle-copy strong{display:block;font-size:12px}.toggle-copy span{display:block;font-size:10px;color:var(--muted);margin-top:5px}
+.switch{width:51px;height:28px;flex-shrink:0;border:0;border-radius:30px;background:#39475d;padding:4px}
+.switch span{display:block;width:20px;height:20px;border-radius:50%;background:white;transition:.2s}
+.switch.on{background:#4c83ff}.switch.on span{transform:translateX(23px)}
+.quick-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:11px}
+.action{padding:11px 10px;border:1px solid var(--border);border-radius:10px;background:#202e46;color:var(--text);font-size:11px;font-weight:700}
+.action.primary{background:#4c78ed;border-color:#4c78ed}.action.danger{background:#402532;border-color:#68404c;color:#ffc1c1}
+.action:disabled{opacity:.4;cursor:not-allowed}
+#message,.notice{color:var(--muted);font-size:11px;line-height:1.8;overflow-wrap:anywhere;margin-top:13px}
+.page{display:none}.page.active{display:block}
+.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:17px}
+.info-item{padding:15px;background:#172239;border:1px solid var(--border);border-radius:12px;min-width:0}
+.info-item span{display:block;font-size:10px;color:var(--muted);margin-bottom:7px}.info-item strong{font-size:12px;overflow-wrap:anywhere}
+.token-box{margin-top:14px;padding:14px;border:1px solid var(--border);background:#0b1425;border-radius:11px;word-break:break-all;font:11px/1.8 monospace;color:#b8cbff;max-height:140px;overflow:auto}
+.actions-wrap{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.event{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--border)}
+.event-icon{width:34px;height:34px;flex-shrink:0;display:grid;place-items:center;background:#202e46;border-radius:10px}
+.event strong{font-size:11px;display:block;line-height:1.6;overflow-wrap:anywhere}.event small{display:block;color:var(--muted);font-size:10px;margin-top:4px;line-height:1.6}
+.table-wrap{overflow-x:auto;margin-top:15px}table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--border);vertical-align:top}th{color:var(--muted);font-weight:600}td{overflow-wrap:anywhere}
+.badge{display:inline-block;padding:5px 8px;border-radius:20px;background:#173a32;color:var(--green);font-size:10px}.badge.warn{background:#402532;color:#ffaaaa}
+.empty{color:var(--muted);font-size:12px;padding:20px 0}
+input{width:100%;padding:12px;margin-top:10px;color:white;background:#0c1527;border:1px solid var(--border);border-radius:10px;outline:none}
+input:focus{border-color:var(--blue)}
+.login-overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:#050a14dd;backdrop-filter:blur(12px);overflow:auto}
+.login-box{width:100%;max-width:400px;padding:28px;border:1px solid var(--border);border-radius:20px;background:#121c30;box-shadow:0 25px 100px #0008;margin:auto}
+.login-box .logo{margin:0 0 22px}.login-box h2{font-size:22px;margin:9px 0}.login-box p{color:var(--muted);font-size:12px;line-height:1.8}
+.login-btn{width:100%;padding:13px;margin-top:14px;border:0;border-radius:10px;background:linear-gradient(100deg,#527ef0,#8065ed);color:white;font-weight:700}
+.hidden{display:none!important}
+footer{color:#63738e;font-size:10px;text-align:center;margin-top:25px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--border);padding:15px;display:block}.sidebar .logo{margin-bottom:15px}.sidebar .section-label,.sidebar-bottom{display:none}.nav{display:inline-flex;width:auto;padding:10px}.content-grid{grid-template-columns:1fr}main{padding:22px 17px}}
+@media(max-width:560px){.stats,.info-grid{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.welcome{padding:18px}.card{padding:17px}.nav{font-size:10px;gap:6px;padding:9px}.sidebar{overflow-x:auto}.sidebar nav{min-width:max-content}}
+</style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="logo"><div class="logo-icon">⌂</div><span>SMART<span style="color:#8ea9ff">IOT</span></span></div>
+    <div class="eyebrow">SECURE ACCESS PORTAL</div>
+    <h2>Đăng nhập hệ thống</h2>
+    <p>Đăng nhập để truy cập và điều khiển hệ thống đèn IoT.</p>
+    <form id="loginForm">
+      <input id="username" placeholder="Tên đăng nhập" autocomplete="username" required>
+      <input id="password" type="password" placeholder="Mật khẩu" autocomplete="current-password" required>
+      <button class="login-btn" type="submit">Đăng nhập →</button>
+    </form>
+    <div id="loginMessage" style="color:#ff9b9b;font-size:12px;margin-top:12px"></div>
+    <hr style="border:0;border-top:1px solid var(--border);margin:20px 0">
+    <h3>Chưa có tài khoản?</h3>
+    <p>Đăng ký tài khoản guest. Mặc định chưa có quyền điều khiển đèn.</p>
+    <form id="registerForm">
+      <input id="registerUsername" placeholder="Tên tài khoản (3-20 ký tự)" required>
+      <input id="registerPassword" type="password" placeholder="Mật khẩu (ít nhất 6 ký tự)" required>
+      <button class="login-btn" type="submit">Đăng ký tài khoản</button>
+    </form>
+    <div id="registerMessage" style="font-size:12px;line-height:1.8;margin-top:10px"></div>
+  </div>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="logo"><div class="logo-icon">⌂</div><span>SMART<span style="color:#8ea9ff">IOT</span></span></div>
+  <div class="section-label">WORKSPACE</div>
+  <nav>
+    <button class="nav active" data-page="overview">▦ Tổng quan</button>
+    <button class="nav" data-page="device">💡 Thiết bị</button>
+  </nav>
+  <div class="section-label">HỆ THỐNG</div>
+  <nav>
+    <button class="nav" data-page="security">♧ Bảo mật JWT</button>
+    <button class="nav" data-page="history">◷ Lịch sử hoạt động</button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div style="font-size:12px;font-weight:700">Trạng thái hệ thống</div>
+    <div class="mini-status"><span class="dot"></span><span id="serverStatus">Đang kiểm tra API</span></div>
+    <div style="font-size:10px;color:var(--muted);margin-top:9px">Node.js · localhost:3000</div>
+    <button id="logoutBtn" class="logout-btn">↪ Đăng xuất</button>
+  </div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div><div class="eyebrow">SMART HOME / CONTROL CENTER</div><h1 id="pageTitle">Tổng quan hệ thống</h1><div class="subtitle">Quản lý thiết bị IoT bằng xác thực JWT</div></div>
+    <div class="online"><span class="dot"></span><span id="topStatus">ĐANG KIỂM TRA</span></div>
+  </div>
+
+  <section class="page active" id="page-overview">
+    <div class="welcome"><div><h2>Xin chào, <span id="welcomeUser">Guest</span> 👋</h2><p>Hệ thống đèn thông minh đã sẵn sàng.<br>Theo dõi thiết bị và trạng thái xác thực tại đây.</p><p id="roleLabel">Chưa đăng nhập</p></div><div class="welcome-icon">🏠</div></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">THIẾT BỊ</div><div class="stat-value">01 thiết bị</div><div class="stat-hint">Đèn phòng khách · LIGHT-001</div></div>
+      <div class="stat"><div class="stat-label">KẾT NỐI API</div><div class="stat-value" id="apiStat">Đang kiểm tra</div><div class="stat-hint">Node.js · Express</div></div>
+      <div class="stat"><div class="stat-label">XÁC THỰC</div><div class="stat-value" id="jwtStatus">Chưa đăng nhập</div><div class="stat-hint" id="jwtExpiry">JWT bảo vệ API điều khiển</div></div>
+    </div>
+    <div class="content-grid">
+      <div class="card">
+        <div class="card-heading"><div><h3>Điều khiển thiết bị</h3><div class="card-description">Đèn phòng khách · LIGHT-001</div></div><span class="pill">IoT DEVICE</span></div>
+        <div class="light-stage"><div class="bulb-wrap"><div class="bulb">💡</div></div><div class="light-name">Đèn phòng khách</div><div class="light-status" id="lightStatus">ĐANG TẮT</div></div>
+        <div class="toggle-row"><div class="toggle-copy"><strong>Trạng thái nguồn</strong><span id="toggleDescription">Đèn hiện đang tắt</span></div><button id="toggle" class="switch" aria-label="Bật hoặc tắt đèn" aria-pressed="false"><span></span></button></div>
+        <div class="quick-buttons"><button class="action primary" id="turnOn">☀ BẬT ĐÈN</button><button class="action" id="turnOff">◐ TẮT ĐÈN</button></div>
+        <div id="message">Đăng nhập để bắt đầu điều khiển.</div>
+      </div>
+      <div class="card"><div class="card-heading"><div><h3>Nhật ký gần đây</h3><div class="card-description">Các thao tác trong phiên hiện tại</div></div><span class="pill">LIVE</span></div><div id="recentEvents"><div class="empty">Chưa có hoạt động.</div></div><button class="action" data-goto="history" style="width:100%;margin-top:10px">Xem lịch sử →</button></div>
+    </div>
+  </section>
+
+  <section class="page" id="page-device">
+    <div class="card">
+      <div class="card-heading"><div><h3>Danh sách thiết bị</h3><div class="card-description">Thiết bị trong bản demo</div></div><span class="pill">1 DEVICE</span></div>
+      <div class="info-grid">
+        <div class="info-item"><span>Tên thiết bị</span><strong>Đèn phòng khách</strong></div>
+        <div class="info-item"><span>Mã thiết bị</span><strong>LIGHT-001</strong></div>
+        <div class="info-item"><span>Loại thiết bị</span><strong>Smart Light (mô phỏng)</strong></div>
+        <div class="info-item"><span>Trạng thái hiện tại</span><strong id="deviceLightStatus">Đang tắt</strong></div>
+        <div class="info-item"><span>API điều khiển</span><strong>/api/light/on · /api/light/off</strong></div>
+        <div class="info-item"><span>Bảo vệ truy cập</span><strong>JWT Bearer Token</strong></div>
+      </div>
+      <div class="actions-wrap"><button class="action primary" data-goto="overview">Điều khiển đèn</button><button class="action" id="refreshStatus">Làm mới trạng thái</button></div>
+      <div id="deviceMessage" class="notice">Đèn đang được mô phỏng trong server Node.js, chưa kết nối phần cứng thật.</div>
+    </div>
+  </section>
+
+  <section class="page" id="page-security">
+    <div class="card">
+      <div class="card-heading"><div><h3>Trung tâm bảo mật JWT</h3><div class="card-description">Kiểm tra token và quyền truy cập API</div></div><span class="pill">JWT AUTH</span></div>
+      <div class="info-grid">
+        <div class="info-item"><span>Tài khoản</span><strong id="securityLogin">Chưa đăng nhập</strong></div>
+        <div class="info-item"><span>Vai trò</span><strong id="securityRole">Chưa có</strong></div>
+        <div class="info-item"><span>Trạng thái token</span><strong id="securityTokenState">Chưa có token</strong></div>
+        <div class="info-item"><span>Thời hạn JWT</span><strong>1 giờ</strong></div>
+      </div>
+      <div style="margin-top:20px;font-size:12px;font-weight:700">JWT hiện tại</div>
+      <div id="tokenPreview" class="token-box">Chưa đăng nhập nên chưa có JWT.</div>
+      <div class="actions-wrap">
+        <button class="action primary" id="testNoToken">Kiểm thử không token</button>
+        <button class="action" id="testFakeToken">Kiểm thử token giả</button>
+        <button class="action" id="testValidToken">Kiểm thử token hiện tại</button>
+        <button class="action" id="testGuestPermission">Kiểm thử quyền bật đèn</button>
+      </div>
+      <div id="securityResult" class="notice">Các bài kiểm thử sẽ gửi yêu cầu trực tiếp đến API.</div>
+
+      <div id="ownerPermissions" class="hidden" style="margin-top:25px;padding-top:20px;border-top:1px solid var(--border)">
+        <div class="card-heading"><div><h3>Quản lý quyền guest</h3><div class="card-description">Owner cấp hoặc thu hồi quyền điều khiển đèn.</div></div><span class="pill">OWNER ONLY</span></div>
+        <div id="guestList"><div class="empty">Đang tải tài khoản...</div></div>
+        <div id="permissionResult" class="notice"></div>
+      </div>
+      <div class="notice">HTTP 401: thiếu token. HTTP 403: token không hợp lệ hoặc tài khoản không đủ quyền. HTTP 200: yêu cầu được chấp nhận.</div>
+    </div>
+  </section>
+
+  <section class="page" id="page-history">
+    <div class="card">
+      <div class="card-heading"><div><h3>Lịch sử hoạt động</h3><div class="card-description">Nhật ký thao tác trong phiên trình duyệt hiện tại</div></div><span class="pill" id="eventCount">0 hoạt động</span></div>
+      <div class="actions-wrap"><button class="action" id="exportHistory">Xuất lịch sử .txt</button><button class="action danger" id="clearHistory">Xóa lịch sử</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Thời gian</th><th>Hoạt động</th><th>Chi tiết</th><th>Kết quả</th></tr></thead><tbody id="historyRows"><tr><td colspan="4" class="empty">Chưa có hoạt động.</td></tr></tbody></table></div>
+      <div class="notice">Lịch sử chỉ lưu tạm trong bộ nhớ của trang, chưa lưu vào cơ sở dữ liệu.</div>
+    </div>
+  </section>
+  <footer>SMART IOT CONTROL CENTER · JWT AUTHENTICATION · DEMO PROJECT</footer>
+</main>
+</div>
+
+<script>
+
+let token = "";
+let lightOn = false;
+let currentUser = "";
+let currentRole = "";
+let canControlLight = false;
+let events = [];
+
+const $ = id => document.getElementById(id);
+const timeNow = () => new Date().toLocaleString("vi-VN");
+
+function authHeaders() {
+    return token ? { Authorization: "Bearer " + token } : {};
+}
+
+async function apiRequest(url, options = {}) {
+    const headers = {
+        ...(options.headers || {})
+    };
+
+    // Tu dong gui JWT neu da dang nhap
+    if (token && !headers.Authorization) {
+        headers.Authorization = "Bearer " + token;
+    }
+
+    return fetch(url, {
+        ...options,
+        headers
+    });
+}
+
+function renderEvents() {
+    const recent = $("recentEvents");
+    recent.replaceChildren();
+
+    if (!events.length) {
+        recent.innerHTML = '<div class="empty">Chưa có hoạt động.</div>';
+    } else {
+        events.slice(0, 4).forEach(item => {
+            const row = document.createElement("div");
+            row.className = "event";
+
+            const icon = document.createElement("div");
+            icon.className = "event-icon";
+            icon.textContent = item.icon || "🔹";
+
+            const content = document.createElement("div");
+            const strong = document.createElement("strong");
+            strong.textContent = item.title;
+
+            const small = document.createElement("small");
+            small.textContent = item.time + " · " + item.detail;
+
+            content.append(strong, small);
+            row.append(icon, content);
+            recent.append(row);
+        });
+    }
+
+    const tbody = $("historyRows");
+    tbody.replaceChildren();
+    $("eventCount").textContent = events.length + " hoạt động";
+
+    if (!events.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.className = "empty";
+        td.textContent = "Chưa có hoạt động.";
+        tr.append(td);
+        tbody.append(tr);
+        return;
+    }
+
+    events.forEach(item => {
+        const tr = document.createElement("tr");
+
+        [item.time, item.title, item.detail, item.result].forEach((value, index) => {
+            const td = document.createElement("td");
+
+            if (index === 3) {
+                const badge = document.createElement("span");
+                badge.className = "badge" +
+                    (value === "Bị từ chối" || value === "Thất bại" ? " warn" : "");
+                badge.textContent = value;
+                td.append(badge);
+            } else {
+                td.textContent = value || "";
+            }
+
+            tr.append(td);
+        });
+
+        tbody.append(tr);
+    });
+}
+
+function addEvent(title, detail, result = "Thành công", icon = "🔹") {
+    events.unshift({
+        time: timeNow(),
+        title,
+        detail,
+        result,
+        icon
+    });
+
+    renderEvents();
+
+    if (token) {
+        fetch("/api/history", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...authHeaders()
+            },
+            body: JSON.stringify({ title, detail, result, icon })
+        }).then(response => {
+            if (response.ok) loadSharedHistory();
+        }).catch(error => console.error("Loi luu lich su:", error));
+    }
+}
+
+async function loadSharedHistory() {
+    if (!token) return;
+
+    try {
+        const response = await apiRequest("/api/history");
+
+        if (response.status === 401) {
+            invalidateToken();
+            return;
+        }
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        events = (data.events || []).map(item => ({
+            time: item.created_at
+                ? new Date(item.created_at).toLocaleString("vi-VN")
+                : timeNow(),
+            title: item.title,
+            detail: item.username + " · " + (item.detail || ""),
+            result: item.result,
+            icon: item.icon || "🔹"
+        }));
+
+        renderEvents();
+    } catch (error) {
+        console.error("Loi tai lich su:", error);
+    }
+}
+
+function showPage(name) {
+    document.querySelectorAll(".page").forEach(page => {
+        page.classList.remove("active");
+    });
+
+    $("page-" + name).classList.add("active");
+
+    document.querySelectorAll(".nav[data-page]").forEach(button => {
+        button.classList.toggle("active", button.dataset.page === name);
+    });
+
+    const titles = {
+        overview: "Tổng quan hệ thống",
+        device: "Quản lý thiết bị",
+        security: "Bảo mật JWT",
+        history: "Lịch sử hoạt động"
+    };
+
+    $("pageTitle").textContent = titles[name] || "Smart IoT";
+
+    if (name === "security") updateSecurityInfo();
+    if (name === "history") loadSharedHistory();
+}
+
+document.querySelectorAll(".nav[data-page]").forEach(button => {
+    button.addEventListener("click", () => showPage(button.dataset.page));
+});
+
+document.querySelectorAll("[data-goto]").forEach(button => {
+    button.addEventListener("click", () => showPage(button.dataset.goto));
+});
+
+function updateSecurityInfo() {
+    $("securityLogin").textContent = currentUser || "Chưa đăng nhập";
+    $("securityRole").textContent = currentRole
+        ? (currentRole === "owner" ? "Owner" : "Guest")
+        : "Chưa có";
+    $("securityTokenState").textContent = token ? "Đang có token" : "Không có token";
+    $("tokenPreview").textContent = token || "Chưa đăng nhập nên chưa có JWT.";
+}
+
+function updateLight(state) {
+    // Server co the tra ve on hoac lightOn
+    lightOn = Boolean(state);
+
+    document.body.classList.toggle("light-on", lightOn);
+    $("lightStatus").textContent = lightOn ? "● ĐANG BẬT" : "○ ĐANG TẮT";
+    $("lightStatus").style.color = lightOn ? "var(--yellow)" : "var(--muted)";
+    $("toggle").classList.toggle("on", lightOn);
+    $("toggle").setAttribute("aria-pressed", String(lightOn));
+    $("toggleDescription").textContent = lightOn
+        ? "Đèn đang phát sáng"
+        : "Đèn hiện đang tắt";
+    $("deviceLightStatus").textContent = lightOn ? "Đang bật" : "Đang tắt";
+}
+
+function updateControlPermissions() {
+    const allowed = Boolean(token) &&
+        (currentRole === "owner" ||
+        (currentRole === "guest" && canControlLight));
+
+    $("toggle").disabled = !allowed;
+    $("turnOn").disabled = !allowed;
+    $("turnOff").disabled = !allowed;
+
+    if (!token) {
+        $("message").textContent = "Hãy đăng nhập để điều khiển đèn.";
+    } else if (!allowed) {
+        $("message").textContent = "Tài khoản guest chưa được cấp quyền điều khiển đèn.";
+    } else {
+        $("message").textContent = "Bạn có quyền điều khiển đèn.";
+    }
+}
+
+function setAuthDisplay(isAuthenticated) {
+    $("jwtStatus").textContent = isAuthenticated ? "JWT hợp lệ" : "Chưa đăng nhập";
+    $("jwtStatus").style.color = isAuthenticated ? "var(--green)" : "var(--muted)";
+    $("jwtExpiry").textContent = isAuthenticated
+        ? "Token đang được sử dụng để xác thực API"
+        : "JWT bảo vệ API điều khiển";
+
+    $("roleLabel").textContent = currentRole
+        ? "Vai trò: " + (currentRole === "owner" ? "Owner" : "Guest") +
+          " · Quyền điều khiển: " + (canControlLight ? "Có" : "Chưa có")
+        : "Chưa đăng nhập";
+
+    updateSecurityInfo();
+    updateControlPermissions();
+}
+
+function invalidateToken() {
+    token = "";
+    currentUser = "";
+    currentRole = "";
+    canControlLight = false;
+
+    $("loginOverlay").classList.remove("hidden");
+    $("ownerPermissions").classList.add("hidden");
+    setAuthDisplay(false);
+    $("message").textContent = "Phiên đăng nhập hết hạn hoặc token không hợp lệ. Hãy đăng nhập lại.";
+}
+
+async function getLightStatus() {
+    if (!token) return;
+
+    try {
+        const response = await apiRequest("/api/light");
+
+        if (response.status === 401) {
+            invalidateToken();
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Không lấy được trạng thái đèn.");
+        }
+
+        updateLight(data.on ?? data.lightOn);
+    } catch (error) {
+        $("message").textContent = error.message || "Lỗi kết nối server.";
+    }
+}
+
+async function checkApiStatus() {
+    try {
+        const response = await fetch("/api/light");
+        const online = response.status === 401 ||
+            response.status === 403 || response.ok;
+
+        $("serverStatus").textContent = online
+            ? "Server đang hoạt động" : "API phản hồi lỗi";
+        $("topStatus").textContent = online
+            ? "API ĐANG HOẠT ĐỘNG" : "API CÓ LỖI";
+        $("apiStat").textContent = online ? "Online" : "Có lỗi";
+        $("apiStat").style.color = online ? "var(--green)" : "var(--red)";
+    } catch {
+        $("serverStatus").textContent = "Không kết nối được server";
+        $("topStatus").textContent = "API NGOẠI TUYẾN";
+        $("apiStat").textContent = "Offline";
+        $("apiStat").style.color = "var(--red)";
+    }
+}
+
+// Dang ky
+$("registerForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    $("registerMessage").textContent = "Đang đăng ký...";
+
+    try {
+        const response = await fetch("/api/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                username: $("registerUsername").value.trim(),
+                password: $("registerPassword").value
+            })
+        });
+
+        const data = await response.json();
+
+        $("registerMessage").textContent = data.message || "Không thể đăng ký.";
+        $("registerMessage").style.color = response.ok ? "var(--green)" : "var(--red)";
+
+        if (response.ok) {
+            $("username").value = $("registerUsername").value.trim();
+            $("password").value = $("registerPassword").value;
+            $("loginMessage").textContent = "Đăng ký thành công. Bạn có thể đăng nhập.";
+        }
+    } catch (error) {
+        $("registerMessage").textContent = "Không kết nối được server.";
+        $("registerMessage").style.color = "var(--red)";
+    }
+});
+
+// Dang nhap
+$("loginForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    $("loginMessage").textContent = "Đang xác thực...";
+
+    try {
+        const response = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                username: $("username").value.trim(),
+                password: $("password").value
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Đăng nhập thất bại.");
+        }
+
+        if (!data.token || !data.user) {
+            throw new Error("Server không trả về token hoặc thông tin tài khoản.");
+        }
+
+        token = data.token;
+        currentUser = data.user.username;
+        currentRole = data.user.role;
+
+        // Ho tro ca camelCase va snake_case
+        canControlLight = Boolean(
+            data.user.can_control_light ?? data.user.canControlLight
+        );
+
+        $("loginOverlay").classList.add("hidden");
+        $("welcomeUser").textContent = currentUser;
+        $("password").value = "";
+        $("loginMessage").textContent = "";
+
+        setAuthDisplay(true);
+        $("ownerPermissions").classList.toggle("hidden", currentRole !== "owner");
+
+        addEvent("Đăng nhập thành công",
+            "Tài khoản " + currentUser + " (" + currentRole + ")",
+            "Thành công", "🔐");
+
+        if (currentRole === "owner") await loadGuestPermissions();
+
+        await getLightStatus();
+        await loadSharedHistory();
+        await checkApiStatus();
+    } catch (error) {
+        $("loginMessage").textContent = error.message || "Không thể kết nối server.";
+    }
+});
+
+// Bat / tat den
+async function requestLight(action) {
+    if (!token) {
+        $("message").textContent = "Vui lòng đăng nhập trước.";
+        return;
+    }
+
+    $("turnOn").disabled = true;
+    $("turnOff").disabled = true;
+    $("toggle").disabled = true;
+
+    try {
+        const response = await apiRequest("/api/light/" + action, {
+            method: "POST"
+        });
+
+        const data = await response.json();
+
+        if (response.status === 401) {
+            invalidateToken();
+            return;
+        }
+
+        if (!response.ok) {
+            $("message").textContent = data.message || "API từ chối yêu cầu.";
+            addEvent("Điều khiển đèn thất bại",
+                data.message || "HTTP " + response.status,
+                "Bị từ chối", "⚠️");
+            return;
+        }
+
+        // Server co the tra ve on hoac lightOn
+        const newState = data.on ?? data.lightOn ?? (action === "on");
+        updateLight(newState);
+
+        $("message").textContent = data.message || "Đã cập nhật trạng thái đèn.";
+        addEvent(action === "on" ? "Bật đèn" : "Tắt đèn",
+            "Tài khoản " + currentUser,
+            "Thành công", "💡");
+
+        await loadSharedHistory();
+    } catch (error) {
+        $("message").textContent = "Lỗi kết nối server: " + error.message;
+    } finally {
+        updateControlPermissions();
+    }
+}
+
+$("turnOn").addEventListener("click", () => requestLight("on"));
+$("turnOff").addEventListener("click", () => requestLight("off"));
+$("toggle").addEventListener("click", () => requestLight(lightOn ? "off" : "on"));
+
+$("logoutBtn").addEventListener("click", () => {
+    // Ghi su kien khi token van con
+    addEvent("Đăng xuất", "Tài khoản " + currentUser,
+        "Thành công", "↪");
+
+    token = "";
+    currentUser = "";
+    currentRole = "";
+    canControlLight = false;
+
+    $("loginOverlay").classList.remove("hidden");
+    $("ownerPermissions").classList.add("hidden");
+    $("password").value = "";
+    $("loginMessage").textContent = "";
+
+    setAuthDisplay(false);
+    $("message").textContent = "Đã đăng xuất. Hãy đăng nhập lại.";
+    showPage("overview");
+});
+
+$("refreshStatus").addEventListener("click", async () => {
+    if (!token) {
+        $("deviceMessage").textContent = "Hãy đăng nhập trước.";
+        return;
+    }
+
+    await getLightStatus();
+    $("deviceMessage").textContent = "Đã yêu cầu cập nhật trạng thái.";
+});
+
+// Kiem thu JWT
+async function runSecurityTest(testName, options = {}) {
+    $("securityResult").textContent = "Đang kiểm thử...";
+
+    try {
+        const response = await fetch("/api/light", options);
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {}
+
+        let passed = false;
+
+        if (testName === "Không có token") {
+            passed = response.status === 401;
+        } else if (testName === "Token giả") {
+            passed = response.status === 403;
+        } else {
+            passed = response.ok;
+        }
+
+        $("securityResult").textContent =
+            testName + " | HTTP " + response.status +
+            " | " + (passed ? "ĐẠT" : "KHÔNG ĐẠT") +
+            (data.message ? " | " + data.message : "");
+
+        addEvent("Kiểm thử JWT: " + testName,
+            "HTTP " + response.status,
+            passed ? "Thành công" : "Thất bại",
+            passed ? "🛡️" : "⚠️");
+    } catch (error) {
+        $("securityResult").textContent = "Lỗi kết nối API: " + error.message;
+    }
+}
+
+$("testNoToken").addEventListener("click", () =>
+    runSecurityTest("Không có token")
+);
+
+$("testFakeToken").addEventListener("click", () =>
+    runSecurityTest("Token giả", {
+        headers: { Authorization: "Bearer fake.invalid.token" }
+    })
+);
+
+$("testValidToken").addEventListener("click", () => {
+    if (!token) {
+        $("securityResult").textContent = "Hãy đăng nhập trước.";
+        return;
+    }
+
+    runSecurityTest("Token hiện tại", { headers: authHeaders() });
+});
+
+$("testGuestPermission").addEventListener("click", async () => {
+    if (!token) {
+        $("securityResult").textContent = "Hãy đăng nhập trước.";
+        return;
+    }
+
+    try {
+        const response = await apiRequest("/api/light/on", {
+            method: "POST"
+        });
+
+        const data = await response.json();
+        const passed = (currentRole === "owner" || canControlLight)
+            ? response.ok
+            : response.status === 403;
+
+        $("securityResult").textContent =
+            "Kiểm thử quyền | HTTP " + response.status +
+            " | " + (passed ? "ĐẠT" : "KHÔNG ĐẠT") +
+            " | " + (data.message || "");
+
+        if (response.ok) {
+            updateLight(data.on ?? data.lightOn ?? true);
+        }
+
+        addEvent("Kiểm thử quyền điều khiển",
+            data.message || "HTTP " + response.status,
+            passed ? "Thành công" : "Thất bại",
+            passed ? "🛡️" : "⚠️");
+    } catch (error) {
+        $("securityResult").textContent = "Lỗi: " + error.message;
+    }
+});
+
+// Owner quan ly quyen guest
+async function loadGuestPermissions() {
+    if (!token || currentRole !== "owner") return;
+
+    $("guestList").textContent = "Đang tải tài khoản...";
+
+    try {
+        const response = await apiRequest("/api/users");
+        const data = await response.json();
+
+        if (response.status === 401) {
+            invalidateToken();
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || "Không tải được danh sách.");
+        }
+
+        $("guestList").replaceChildren();
+
+        if (!data.users || data.users.length === 0) {
+            $("guestList").innerHTML =
+                '<div class="empty">Chưa có tài khoản guest.</div>';
+            return;
+        }
+
+        data.users.forEach(user => {
+            const allowed = Boolean(
+                user.can_control_light ?? user.canControlLight
+            );
+
+            const row = document.createElement("div");
+            row.style.cssText =
+                "display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);flex-wrap:wrap";
+
+            const info = document.createElement("div");
+            const name = document.createElement("strong");
+            name.textContent = user.username;
+            name.style.fontSize = "12px";
+
+            const status = document.createElement("div");
+            status.className = "card-description";
+            status.textContent = allowed
+                ? "Đã được cấp quyền điều khiển"
+                : "Chưa có quyền điều khiển";
+
+            info.append(name, status);
+
+            const button = document.createElement("button");
+            button.className = "action " + (allowed ? "danger" : "primary");
+            button.textContent = allowed ? "Thu hồi quyền" : "Cấp quyền";
+            button.addEventListener("click", () =>
+                changeGuestPermission(user.username, !allowed)
+            );
+
+            row.append(info, button);
+            $("guestList").append(row);
+        });
+    } catch (error) {
+        $("guestList").textContent = error.message;
+    }
+}
+
+async function changeGuestPermission(username, allow) {
+    try {
+        const response = await apiRequest(
+            "/api/users/" + encodeURIComponent(username) + "/permission",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ allow })
+            }
+        );
+
+        const data = await response.json();
+
+        $("permissionResult").textContent =
+            data.message || "HTTP " + response.status;
+        $("permissionResult").style.color =
+            response.ok ? "var(--green)" : "var(--red)";
+
+        if (response.ok) {
+            await loadGuestPermissions();
+        }
+
+        await loadSharedHistory();
+    } catch (error) {
+        $("permissionResult").textContent = "Lỗi kết nối server: " + error.message;
+    }
+}
+
+// Xuat lich su
+$("exportHistory").addEventListener("click", () => {
+    const lines = ["LICH SU HOAT DONG - SMART IOT", "================================"];
+
+    events.forEach(item => {
+        lines.push(
+            item.time + " | " + item.title + " | " +
+            item.detail + " | " + item.result
+        );
+    });
+
+    const blob = new Blob([lines.join("\n")], {
+        type: "text/plain;charset=utf-8"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "lich-su-smart-iot.txt";
+    link.click();
+    URL.revokeObjectURL(url);
+});
+
+$("clearHistory").addEventListener("click", () => {
+    if (!confirm("Xóa lịch sử đang hiển thị? Lịch sử trong database không bị xóa.")) {
+        return;
+    }
+
+    events = [];
+    renderEvents();
+});
+
+setAuthDisplay(false);
+updateLight(false);
+checkApiStatus();
+
+setInterval(() => {
+    if (token) {
+        loadSharedHistory();
+    }
+}, 4000);
+</script>
+</body>
+</html>
